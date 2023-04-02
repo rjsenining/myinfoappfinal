@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'homepage.dart';
+import 'signup_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -13,35 +13,35 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _auth = FirebaseAuth.instance;
-  final _prefs = SharedPreferences.getInstance();
 
-  bool _isLoading = false;
   String _errorMessage = '';
+  bool _isLoading = false;
 
   Future<void> _login() async {
     setState(() {
-      _isLoading = true;
       _errorMessage = '';
+      _isLoading = true;
     });
 
     try {
-      final userCredential = await _auth.signInWithEmailAndPassword(
+      final auth = FirebaseAuth.instance;
+      await auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      final prefs = await _prefs;
-      await prefs.setString('uid', userCredential.user!.uid);
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => HomePage()),
       );
     } on FirebaseAuthException catch (e) {
       setState(() {
-        _errorMessage = e.message ?? 'An unknown error occurred.';
+        _errorMessage = e.message ?? 'An error occurred';
+        _isLoading = false;
       });
-    } finally {
+    } catch (e) {
       setState(() {
+        _errorMessage = 'An error occurred';
         _isLoading = false;
       });
     }
@@ -51,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Login')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
@@ -60,8 +60,8 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               TextFormField(
                 controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your email.';
@@ -71,8 +71,8 @@ class _LoginPageState extends State<LoginPage> {
               ),
               TextFormField(
                 controller: _passwordController,
-                obscureText: true,
                 decoration: InputDecoration(labelText: 'Password'),
+                obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password.';
@@ -80,23 +80,25 @@ class _LoginPageState extends State<LoginPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 16.0),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _login,
+                child: Text('Login'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => SignupPage()),
+                  );
+                },
+                child: Text('Sign up'),
+              ),
               if (_errorMessage.isNotEmpty)
                 Text(
                   _errorMessage,
                   style: TextStyle(color: Colors.red),
                 ),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _login,
-                child: _isLoading
-                    ? CircularProgressIndicator()
-                    : Text('Login'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/signup');
-                },
-                child: Text('Don\'t have an account? Sign up.'),
-              ),
             ],
           ),
         ),

@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Welcome ${_user?.email ?? 'to your app'}',
+              'Welcome ${_user?.email ?? 'to your Home Page'}',
               style: TextStyle(fontSize: 24.0),
             ),
             SizedBox(height: 16.0),
