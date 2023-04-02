@@ -21,6 +21,10 @@ class _SignupPageState extends State<SignupPage> {
   final _nicknameController = TextEditingController();
   final _schoolController = TextEditingController();
   final _hobbiesController = TextEditingController();
+  final _genderController = TextEditingController();
+
+
+
 
   String _errorMessage = '';
   bool _isLoading = false;
@@ -46,6 +50,8 @@ class _SignupPageState extends State<SignupPage> {
         'nickname': _nicknameController.text.trim(),
         'school': _schoolController.text.trim(),
         'hobbies': _hobbiesController.text.trim(),
+        'gender': _genderController.text.trim(),
+
       };
       await FirebaseFirestore.instance
           .collection('users')
@@ -169,6 +175,18 @@ class _SignupPageState extends State<SignupPage> {
           return null;
         },
       ),
+      TextFormField(
+        controller: _genderController,
+        decoration: InputDecoration(labelText: 'Gender'),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter your gender.';
+          }
+          return null;
+        },
+      ),
+
+
       SizedBox(height: 16.0),
       ElevatedButton(
         onPressed: _isLoading ? null : _signup,
